@@ -5,7 +5,7 @@ const ytdl = require('ytdl-core');
 
 const client = new Client({ disableEveryone: true });
 
-const youtube = new YouTube(GOOGLE_API_KEY);
+const youtube = new YouTube(process.env.GOOGLE_API_KEY);
 
 const queue = new Map();
 
@@ -22,7 +22,7 @@ client.on('reconnecting', () => console.log('I am reconnecting now!'));
 client.on('message', async msg => {
 
 	if (msg.author.bot) return undefined;
-	if (!msg.content.startsWith(PREFIX)) return undefined;
+	if (!msg.content.startsWith(process.env.PREFIX)) return undefined;
 
 	const args = msg.content.split(' ');
 	const searchString = args.slice(1).join(' ');
@@ -30,7 +30,7 @@ client.on('message', async msg => {
 	const serverQueue = queue.get(msg.guild.id);
 
 	let command = msg.content.toLowerCase().split(' ')[0];
-	command = command.slice(PREFIX.length)
+	command = command.slice(process.env.PREFIX.length)
 
 	if (command === 'play') {
 		const voiceChannel = msg.member.voiceChannel;
@@ -251,4 +251,4 @@ function play(guild, connection) {
 
 }
 
-client.login(TOKEN);
+client.login(process.env.TOKEN);

@@ -1,7 +1,7 @@
 const { Client, Util, RichEmbed } = require('discord.js');
-const TOKEN = 'NDM5MTQxNDc4MTQ5NjUyNDgw.DcO15Q.2G8yerRLXjMM5Z3dKdDP4LqqhPU';
-const PREFIX = '&';
-const GOOGLE_API_KEY = 'AIzaSyBCNMlyaRrxksWtcy-NNJE40Jd_wkmXbI0';
+const TOKEN = ('NDM5MTQxNDc4MTQ5NjUyNDgw.DcO15Q.2G8yerRLXjMM5Z3dKdDP4LqqhPU');
+const PREFIX = ('&');
+const GOOGLE_API_KEY = ('AIzaSyBCNMlyaRrxksWtcy-NNJE40Jd_wkmXbI0');
 const YouTube = require('simple-youtube-api');
 const ytdl = require('ytdl-core');
 

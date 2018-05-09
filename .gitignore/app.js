@@ -1,14 +1,14 @@
 const { Client, Util, RichEmbed } = require('discord.js');
-const { TOKEN, PREFIX, GOOGLE_API_KEY } = require('./config');
+//const { TOKEN, PREFIX, GOOGLE_API_KEY } = require('./config');
 const YouTube = require('simple-youtube-api');
 const ytdl = require('ytdl-core');
 const fs = require('fs');
 const ms = require("ms");
-
-
+const TOKEN = "NDM5MTQxNDc4MTQ5NjUyNDgw.DcO15Q.2G8yerRLXjMM5Z3dKdDP4LqqhPU"
+const PREFIX = "&"
 const client = new Client({ disableEveryone: true });
 
-const youtube = new YouTube(GOOGLE_API_KEY);
+const youtube = new YouTube('AIzaSyBCNMlyaRrxksWtcy-NNJE40Jd_wkmXbI0');
 
 const queue = new Map();
 

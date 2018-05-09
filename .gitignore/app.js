@@ -3,6 +3,7 @@ const { TOKEN, PREFIX, GOOGLE_API_KEY } = require('./config');
 const YouTube = require('simple-youtube-api');
 const ytdl = require('ytdl-core');
 const fs = require('fs');
+const ms = require("ms");
 
 
 const client = new Client({ disableEveryone: true });
@@ -13,17 +14,16 @@ const queue = new Map();
 
 let xp = require("./xp.json");
 
-var version = 1.0;
-var version1 = 0.4;
+var version = '1.0.0.5';
 
 client.on('warn', console.warn);
 
 client.on('error', console.error);
 
 client.on("ready", () => {
-	console.log(`Je suis prêt en version: v${version}.${version1} !`); 
+	console.log(`Je suis prêt en version: v${version} !`); 
 	//type: PLAYING, STREAMING, LISTENING, WATCHING;
-	client.user.setActivity(PREFIX +`help | v${version}.${version1} | MàJ Join/Quit message !`, { type: 'LISTENING' });
+	client.user.setActivity(PREFIX +`help | v${version} | MàJ TempsMute !`, { type: 'LISTENING' });
 	//setStatus: Online, idle, invisible, dnd
 	client.user.setStatus('Online')
   });
@@ -72,7 +72,7 @@ if(command === "version") {
 	msg.channel.send({embed: {
 		color: 15158332,
 		title: "Version:",
-		description: `🤖 Ma version est: __**v${version}.${version1}**__ !`,
+		description: `🤖 Ma version est: __**v${version}**__ !`,
 	},
 	});
 
@@ -80,7 +80,7 @@ if(command === "version") {
 	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
 		return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
 
-	let reason = args.slice(1).join(' ');
+	let reason = args.slice(2).join(' ');
 	let user = msg.mentions.users.first();
 	let modlog = client.channels.find('name', 'mod-log');
 
@@ -97,7 +97,7 @@ if(command === "version") {
 		 	.setColor(0x00ff04)
 		 	.setTitle(`Modération`)
 			.addField('Action: Kick','______')
-			.addField('Membre: '+`${user.username}#${user.discriminator}  (${user.id})`,'______')
+			.addField('Membre: '+`${user.username}#${user.discriminator} / id:(${user.id})`,'______')
 			.addField('Raison: '+reason,'______')
 			.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
 			.setTimestamp()
@@ -107,7 +107,7 @@ if(command === "version") {
 	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
 		return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
 
-	  let reason = args.slice(1).join(' ');
+	  let reason = args.slice(2).join(' ');
 	  let user = msg.mentions.users.first();
 	  let modlog = client.channels.find('name', 'mod-log');
 
@@ -120,11 +120,11 @@ if(command === "version") {
 		if (!msg.guild.member(user).bannable) 
 		 	return msg.reply(':warning: **Je ne peux pas kick ce membre**');
 	msg.guild.ban(user, 2);
-	 	 const embed = new RichEmbed()
+	 	const embed = new RichEmbed()
 	 	.setColor(0x00ff04)
 		.setTitle(`Modération`)
 		.addField('Action: Ban','______')
-		.addField('Membre: '+`${user.username}#${user.discriminator} / (${user.id})`,'______')
+		.addField('Membre: '+`${user.username}#${user.discriminator} / id:(${user.id})`,'______')
 		.addField('Raison: '+reason,'______')
 		.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
 		.setTimestamp()
@@ -133,7 +133,7 @@ if(command === "version") {
 }else if(command === "unban") {
 	  if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
 		  return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
-	  let reason = args.slice(1).join(' ');
+	  let reason = args.slice(2).join(' ');
 	  client.unbanReason = reason;
 	  client.unbanAuth = msg.author;
 	  let user = args[0];
@@ -145,26 +145,45 @@ if(command === "version") {
 		if (!user) 
 		  	return msg.reply('Vous devez fournir un utilisateur résolu, tel qu\'un ID utilisateur.').catch(console.error);
 	  msg.guild.unban(user);
-	  	const embed = new RichEmbed()
+	const embed = new RichEmbed()
 		.setColor(0x00ff04)
 		.setTitle(`Modération`)
 		.addField('Action: Unban','______')
 		.addField('Membre: '+user,'______')
 		.addField('Raison: '+reason,'______')
-		.addField('Par: '+`${msg.author.username}#${msg.author.discriminator} / (${user.id})`,'______')
+		.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
 		.setTimestamp()
 	return client.channels.get(modlog.id).sendEmbed(embed);
 		
 
-}/**else if(command === "del"){}
+}else if(command === "del"){
+	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
+		return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
+	let purge = args.slice(1).join(' ');
+	let modlog = client.channels.find('name', 'mod-log');
+	if (!modlog) 
+			return msg.reply('Je ne peux pas trouver un canal de mod-log');
+	if(isNaN(purge)) return msg.reply(`Il faut saisir un nombre correct !`)
+	if(purge < 2) return msg.reply(`Il faut saisir un nombre entre 2 et 100 !`)
+	if(purge > 100) return msg.reply(`Il faut saisir un nombre entre 2 et 100 !`)
 
-}**/else if(command === "help") {
+	msg.channel.bulkDelete(purge)
+	const embed = new RichEmbed()
+	.setColor(0x00ff04)
+  	.setTitle(`Modération`)
+	.addField('Action: Purge','______')
+	.addField(`Channel: ${msg.channel.name}`,'______')
+	.addField('Nombre de messages: '+purge,'______')
+	.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
+	.setTimestamp()
+	  client.channels.get(modlog.id).sendEmbed(embed);
+}else if(command === "help") {
 	const help_embed = new RichEmbed()
 		.setTitle("Voici mes Commandes !\n\n\n___")
 		.setColor('0xF0FFF0')
 		.setTitle(`Help`)
 		.addField("Général", "\n\n\n- **&help**: Sert a afficher la liste des commandes.\n\n- **&version**:  Sert a connaître la version du bot.\n\n- **&level**:  Sert a connaître son niveau sur le serveur.\n\n\n___")
-		.addField("Modération", '- **&del**: Sert a supprimer entre 2 à 100 messages. (En Dev)\n\n- **&kick**: Sert a kick un membre.\n\n- **&ban**: Sert a ban un membre.\n\n- **&mute**: Sert a mute/unmute un membre.\n\n- **&warn**: Sert a warn un membre.\n\n- **&sondage**: Sert a créer des sondage.\n\n- **&muterole**: Sert a créer le role mute.\n\n- **&sondagerole**: Sert a créer le role sondage.\n\n\n___')
+		.addField("Modération", '- **&del**: Sert a supprimer entre 2 à 100 messages.\n\n- **&kick**: Sert a kick un membre.\n\n- **&ban**: Sert a ban un membre.\n\n- **&mute**: Sert a mute/unmute un membre.\n\n- **&warn**: Sert a warn un membre.\n\n- **&sondage**: Sert a créer des sondage.\n\n- **&sondagerole**: Sert a créer le role sondage.\n\n\n___')
 		.addField("Musique","- **&play**: Sert a démarrer/ajouter une musique a la liste d'attente.\n\n**- &join**: Sert a connecter le bot dans son salon vocal.\n\n- **&stop**: Sert a déconnecter le bot d'un salon vocal.\n\n- **&skip**: Sert a avancer d'une musique sur la liste d'attente.\n\n**- &volume**: Sert a augmenter/diminuer le volume.\n\n- **&pause**: Sert a mettre en pause la musique.\n\n- **&resume**: Sert a enlever la pause.\n\n- **&np**: Sert à connaître la musique en train de jouer.\n\n- **&queue**: Sert a connaître la liste de musique en attente.\n\n\n___")
 		.setFooter("©Youko & Youke 2018\nTous droits réservés")
 	msg.channel.sendEmbed(help_embed);
@@ -172,7 +191,7 @@ if(command === "version") {
 }else if(command === "warn"){
 	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
 		return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
-	let reason = args.slice(1).join(' ');
+	let reason = args.slice(2).join(' ');
 	let user = msg.mentions.users.first();
 	let modlog = client.channels.find('name', 'mod-log');
 		if (!modlog) 
@@ -185,77 +204,63 @@ if(command === "version") {
 		  		.setColor(0x00ff04)
 		 		.setTitle(`Modération`)
 				.addField('Action: Warn ','______')
-				.addField('Membre: '+`${user.username}#${user.discriminator} / (${user.id})`,'______')
+				.addField('Membre: '+`${user.username}#${user.discriminator} / id:(${user.id})`,'______')
 				.addField('Raison: '+reason,'______')
 				.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
 				.setTimestamp()
 			return client.channels.get(modlog.id).sendEmbed(embed);
-
-}else if(command === "mute"){
+}else if(command === 'mute'){
 	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
 		return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
-	let reason = args.slice(1).join(' ');
-	let user = msg.mentions.users.first();
-	let modlog = client.channels.find('name', 'mod-log');
-	let muteRole = client.guilds.get(msg.guild.id).roles.find('name', 'Mute');
-		if (!modlog) 
-			return msg.reply('I cannot find a mod-log channel').catch(console.error);
-		if (!muteRole) 
-			return msg.reply('Je ne peux pas trouver un rôle **mute** utilise +muterole').catch(console.error);
-		if (reason.length < 1) 
-			return msg.reply('Vous devez fournir une raison pour le **mute.**').catch(console.error);
-		if (msg.mentions.users.size < 1) 
-			return msg.reply('Vous devez mentionner quelqu\'un pour le **mute**').catch(console.error);
-			const embed = new RichEmbed()
-				.setColor(0x00ff04)
-				.setTitle(`Modération`)
-				.addField('Action: Mute/Unmute','______')
-				.addField('Membre: '+`${user.username}#${user.discriminator} / (${user.id})`,'______')
-				.addField('Raison: '+reason,'______')
-				.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
-				.setTimestamp()
-		if (!msg.guild.member(client.user).hasPermission('MANAGE_ROLES_OR_PERMISSIONS')) 
-			return msg.reply('Je n\'ai pas les permissions correctes.').catch(console.error);
-	
-		if (msg.guild.member(user).roles.has(muteRole.id)) {
-			msg.guild.member(user).removeRole(muteRole).then(() => {
-		  	client.channels.get(modlog.id).sendEmbed(embed).catch(console.error);
-		});
-	  	}else{
-			msg.guild.member(user).addRole(muteRole).then(() => {
-			client.channels.get(modlog.id).sendEmbed(embed).catch(console.error);
-		});
-	  }
-	
-}else if(command === "muterole"){
-	
-		if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
-		  return msg.reply("Désolé, vous n'avez pas les permissions pour l'utiliser !");
-		let role = msg.guild.roles.find(r => r.name === "Mute");
-			if(!role){
-		  		try {
-					role = await msg.guild.createRole({
-			  		name: "Mute",
-			  		color:"#CC00FF",
-			 		permissions:[]
-			});
-			msg.guild.channels.forEach(async (channel, id) => {
-			  await channel.overwritePermissions(role, {
-				SEND_MESSAGES: false,
-				ADD_REACTIONS: false
+		let member = msg.guild.member(msg.mentions.users.first() || msg.guild.members.get(args[0]));
+	if(!member) return msg .reply(`L'utilisateur n'existe pas`)
+		let muterole = msg.guild.roles.find("name", "Mute");
+		if(!muterole){
+			try{
+			  muterole = await msg.guild.createRole({
+				name: "Mute",
+				color: "#ff6803",
+				permissions:[]
+			  })
+			  msg.guild.channels.forEach(async (channel, id) => {
+				await channel.overwritePermissions(muterole, {
+				  SEND_MESSAGES: false,
+				  ADD_REACTIONS: false
+				});
 			  });
-			});return msg.channel.send('Role **mute** crée');
-		  } catch (e) {
-			console.log(e.stack)
+			}catch(e){
+			  console.log(e.stack);
+			}
 		  }
-		}
-	
-		if(toMute.roles.has(role.id)) return await(toMute.removeRole(role)) & msg.channel.send("Je l'ai unmuté !");
-	
-		await msg.channel.send("Cet utilisateur n'est pas mute");
-	
-		return;
+		let params = msg.content.split(' ') 
+		let reason = args.slice(3).join(' ');
+	if(!reason) return msg.reply("Tu n'as pas mis de raison")
+		let time = args[2];
+	if(!time) return msg.reply("Tu n'as mis de temps")
+		let modlog = client.channels.find('name', 'mod-log');
+	if(!modlog) return msg .reply(`Le channel mod-log exite pas`)
+		const embed = new RichEmbed()
+			.setColor(0x00ff04)
+			.setTitle(`Modération`)
+			.addField('Action: Mute ','______')
+			.addField('Membre: '+`${member.user.username}#${member.user.discriminator} / id:(${member.id})`,'______')
+  			.addField('Temps: '+`${ms(ms(time), {long: true})}`,'______')
+  			.addField('Raison: '+reason,'______')
+  			.addField('Par: '+`${msg.author.username}#${msg.author.discriminator}`,'______')
+  			.setTimestamp()
+		client.channels.get(modlog.id).sendEmbed(embed);
+	member.addRole(muterole.id);
 
+setTimeout(function() {
+	member.removeRole(muterole.id);
+		const embed = new RichEmbed()
+			.setColor(0x00ff04)
+   			.setTitle(`Modération`)
+ 			.addField('Action: Unmute ','______')
+			.addField('Membre: '+`${member.user.username}#${member.user.discriminator} / id:(${member.id})`,'______')
+ 			.setTimestamp()
+		 client.channels.get(modlog.id).sendEmbed(embed);
+}, ms(time));
 }else if(command === "sondagerole"){
 	
 	if(!msg.member.roles.some(r=>["Administrateur", "Modérateur"].includes(r.name)) )
@@ -286,7 +291,7 @@ if(command === "version") {
 		.setTimestamp()
 		msg.guild.channels.find("name", "sondage").sendEmbed(embed)
 		.then(function (msg) {//❌ ⭕️
-			msg.react("✅") & msg.react("❎")
+			msg.react("❎") && msg.react("✅")
 		}).catch(function() {
 		});
 }else if (command === 'youko') {
@@ -310,8 +315,6 @@ if(command === "version") {
 				description: `Je suis désolé mais vous devez être dans un canal vocal pour jouer de la musique !`,
 			},
 		});
-		
-		//msg.channel.send('Je suis désolé mais vous devez être dans un canal vocal pour jouer de la musique!');
 	const permissions = voiceChannel.permissionsFor(msg.client.user);
 		if (!permissions.has('CONNECT')) {
 			return msg.channel.send({embed: {
@@ -320,18 +323,14 @@ if(command === "version") {
 				description: `Je ne peux pas me connecter à votre canal vocal, assurez-vous d\'avoir les autorisations appropriées !`,
 			},
 		});
-			
-			//msg.channel.send(' Je ne peux pas me connecter à votre canal vocal, assurez-vous d\'avoir les autorisations appropriées!');
-		}
+	}
 		if (!permissions.has('SPEAK')) {
 			return msg.channel.send({embed: {
 				color: 15158332,
 				title: "Musique",
 				description: `Je ne peux pas parler dans ce canal de voix, assurez-vous que j\'ai les permissions appropriées !`,
 			},
-		});
-			
-			//msg.channel.send(' Je ne peux pas parler dans ce canal de voix, assurez-vous que j\'ai les permissions appropriées!');
+		});			
 		}
 
 		if (url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)) {
@@ -348,7 +347,6 @@ if(command === "version") {
 			},
 		});
 			
-			//msg.channel.send(`✅ Playlist: **${playlist.title}** a été ajouté à la file d\'attente!`);
 		} else {
 			try {
 				var video = await youtube.getVideo(url);
@@ -362,13 +360,6 @@ if(command === "version") {
 						description: `__**Song selection:**__\n\n\n${videos.map(video2 => `**${++index} -** ${video2.title}`).join('\n')}\n\n\nVeuillez indiquer une valeur pour sélectionner l'un des résultats de recherche compris entre 1 et 10.`,
 					},
 				});
-					/*msg.channel.send(`
-__**Song selection:**__
-
-${videos.map(video2 => `**${++index} -** ${video2.title}`).join('\n')}
-
-Veuillez indiquer une valeur pour sélectionner l'un des résultats de recherche compris entre 1 et 10.
-					`);*/
 				try {
 					var response = await msg.channel.awaitMessages(msg2 => msg2.content > 0 && msg2.content < 11, {
 						maxMatches: 1,
@@ -384,7 +375,6 @@ Veuillez indiquer une valeur pour sélectionner l'un des résultats de recherche
 					},
 				});
 						
-						//msg.channel.send('Valeur non valide ou non valide, annulation de la sélection de la vidéo');
 			}
 				const videoIndex = parseInt(response.first().content);
 				var video = await youtube.getVideoByID(videos[videoIndex - 1].id);
@@ -422,7 +412,6 @@ Veuillez indiquer une valeur pour sélectionner l'un des résultats de recherche
 	},
 });
 		
-		//msg.channel.send('Il n\'y a rien que je puisse faire pour vous.');
 	serverQueue.dispatcher.end('La commande de skip a été utilisée!');
 	return undefined;
 }else if (command === 'stop') {
@@ -569,7 +558,12 @@ Veuillez indiquer une valeur pour sélectionner l'un des résultats de recherche
 	 
 	   msg.channel.send(lvlEmbed);	 
 }
-	return undefined;
+	/**return msg.channel.send({embed: {
+		color: 15158332,
+		title: "Erreur:",
+		description: "❌commande incorrecte",
+	},
+});;**/
 });
 //XP
 client.on("message", async msg => {
